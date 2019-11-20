@@ -1,5 +1,7 @@
 module AutoSolver
 
+using Unitful
+
 #files = [
 #		]
 
@@ -32,7 +34,7 @@ end
 function findArgs(func::Function)
     methods_str = methods(func)
     arg_ind_1 = findlast("(",string(methods_str))[1]+1
-    arg_ind_2 = findlast(")",string(methods_str))[1]-1
+    arg_ind_2 = findlast(")",string(methods_str))[1]
 
     arg_s = string(methods_str)[arg_ind_1:arg_ind_2]
     args = []
@@ -41,10 +43,10 @@ function findArgs(func::Function)
 
     for char in arg_s
         str = str
-        if isArg == false && (char == ',' || char == ';')
+        if isArg == false && (char == ',' || char == ';' || char == ')')
             isArg = true
         elseif isArg == true
-            if char == ',' || char == ';'
+            if char == ',' || char == ';' || char == ')'
                 push!(args,Symbol(strip(str)))
                 str = ""
             elseif char == '=' || char == ':'
@@ -71,7 +73,11 @@ function moduleDict(mod::Module, funcs::Dict)
             func != Symbol(mod_name) && func != :Base &&
             func != :Core)
             if !occursin("#",string(func))
-                funcType = string(typeof(@eval $(mod).$(func)))
+                funcType = "a"
+                try
+                    funcType = string(typeof(@eval $(mod).$(func)))
+                catch
+                end
                 if occursin("typeof",funcType)
                     func_args = findArgs(@eval $(mod).$(func))
                     funcs[func] = func_args
@@ -192,10 +198,17 @@ function outputDict(funcs::Dict, outputs::Dict; mod::Module=Main, inp_map::Dict=
                 
                 for arg in func[2]
                     valid_inputs = argCheck(AutoSolver, arg, arg_arr, inp, inp_map)
-                    
+
                     if arg == func[2][end] && valid_inputs == 1
                         try
-                            output = evalVariableInputs(mod, func[1], inp)
+                            try
+                                output = evalVariableInputs(mod, func[1], inp)
+                            catch
+                                for i = 1:length(inp)
+                                    inp[i] = ustrip(inp[i])
+                                end
+                                output = evalVariableInputs(mod, func[1], inp)
+                            end
                             println("Func: $(func[1])$(tuple(func[2]...))")
                             println("Inputs:")
                             for i = 1:length(arg_arr)
