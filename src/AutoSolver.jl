@@ -265,11 +265,11 @@ function resetArgs(funcs::Dict, init_args::Array{Any})
 end
 
 function autoSolveOutputs(mods::Array{Module})
+    outputs = Dict()
     for mod in mods
         in_mod = mod
         @show mod
         funcs = Dict()
-        outputs = Dict()
         moduleDict(in_mod,funcs)
         if !isempty(funcs)
             println("::::MODULE $(mod)::::")
@@ -281,6 +281,7 @@ function autoSolveOutputs(mods::Array{Module})
             println()
         end
     end
+    return outputs
 end
 
 end # AutoSolver
