@@ -205,7 +205,7 @@ function outputDict(funcs::Dict, outputs::Dict; mod::Module=Main, inp_map::Dict=
                                 output = evalVariableInputs(mod, func[1], inp)
                             catch
                                 for i = 1:length(inp)
-                                    inp[i] = ustrip(inp[i])
+                                    inp[i] = ustrip.(inp[i])
                                 end
                                 output = evalVariableInputs(mod, func[1], inp)
                             end
@@ -264,7 +264,7 @@ function resetArgs(funcs::Dict, init_args::Array{Any})
     end
 end
 
-function autoSolveOutputs(mods::Array{Module})
+function autoSolveOutputs(mods::Array{Module};inp_map::Dict=Dict())
     outputs = Dict()
     for mod in mods
         in_mod = mod
@@ -273,8 +273,10 @@ function autoSolveOutputs(mods::Array{Module})
         moduleDict(in_mod,funcs)
         if !isempty(funcs)
             println("::::MODULE $(mod)::::")
-            out_d, in_d = varExplodeDict(funcs)
-            inp_map, out_map = crossVarMap(in_d,out_d)
+            # if length(keys(inp_map)) == 0
+                out_d, in_d = varExplodeDict(funcs)
+                inp_map, out_map = crossVarMap(in_d,out_d)
+            # end
             println()
             outputDict(funcs, outputs, mod=in_mod, inp_map=inp_map)
             @show outputs
