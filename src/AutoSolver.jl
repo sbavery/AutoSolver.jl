@@ -273,10 +273,10 @@ function autoSolveOutputs(mods::Array{Module};inp_map::Dict=Dict())
         moduleDict(in_mod,funcs)
         if !isempty(funcs)
             println("::::MODULE $(mod)::::")
-            # if length(keys(inp_map)) == 0
+            if length(keys(inp_map)) == 0
                 out_d, in_d = varExplodeDict(funcs)
                 inp_map, out_map = crossVarMap(in_d,out_d)
-            # end
+            end
             println()
             outputDict(funcs, outputs, mod=in_mod, inp_map=inp_map)
             @show outputs
